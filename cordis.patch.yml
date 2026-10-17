@@ -1,0 +1,6 @@
+# dsh-session-organizer bundle patch: 插入双面（host + client）插件行。
+# host 半（exports "."）在宿主进程运行 /api/dshorg 持久化路由；
+# client 半（exports "./client"）由 web GUI 加载，替换侧边栏浏览器。
+- insert:
+    - id: session-organizer
+      name: 'dsh-session-organizer'
