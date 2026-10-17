@@ -51,7 +51,7 @@
 
 ```bash
 # 从 GitHub 安装（推荐，发布渠道）
-dsh plugin --profile web add https://github.com/<your-github-username>/dsh-session-organizer/archive/refs/heads/main.tar.gz
+dsh plugin --profile web add https://github.com/a1137261060/dsh-session-organizer/archive/refs/heads/main.tar.gz
 
 # 本地开发安装（link 方式：改代码即时生效，重启 dsh web 加载）
 dsh plugin --profile web add link:<插件绝对路径>
