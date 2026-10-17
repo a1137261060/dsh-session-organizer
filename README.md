@@ -3,9 +3,9 @@
 [English](#english) | [中文](#中文)
 
 <a id="english"></a>
-**Two-level session organizer for the DeepSeek Harness (DSH) web sidebar** — organize workspaces into custom **groups** (level 1) and sessions into per-workspace **folders** (level 2, nesting supported). Drag & drop everywhere, live status dots, title + full-text message search, zero runtime dependencies. Replaces the combination of `dsh-workspace-hub` + `dsh-session-categories` with a single plugin.
+**Two-level session organizer for the DeepSeek Harness (DSH) web sidebar** — organize workspaces into custom **groups** (level 1) and sessions into per-workspace **folders** (level 2, nesting supported). Drag & drop everywhere, live status dots (blocked / running / completed), a pending-sessions overview grouped by workspace & folder, title + full-text message search, zero runtime dependencies. Replaces the combination of `dsh-workspace-hub` + `dsh-session-categories` with a single plugin.
 
-> Tested against DSH `0.1.5-rc.1` (web profile). MIT licensed.
+> Tested against DSH `0.2.1-rc.2` (web profile). MIT licensed.
 
 <a id="中文"></a>
 两级会话组织器插件 —— 为 DeepSeek Harness Web 侧边栏提供**两级分类**：
@@ -36,9 +36,18 @@
 
 ### 会话行
 
-- **状态点**：运行中（蓝·脉动）/ 已完成（绿）/ 空闲（灰），实时更新；
+- **状态点**（对齐 0.2.1 原生语义）：等待交互/阻塞（黄）/ 运行中（蓝·脉动）/ 已完成未读（绿）/ 空闲（灰），实时更新；
 - 无标题会话智能回退：优先显示首条提问文本，其次「未命名 · 最近活动时间」，不再是千篇一律的工作区名；
-- ⋯ 菜单：移动到文件夹（含嵌套树）、重命名、分叉（子会话**继承源会话的文件夹**）、归档。
+- ⋯ 菜单：移动到文件夹（含嵌套树）、重命名、分叉（子会话**继承源会话的文件夹**）、归档、复制会话 ID。
+
+### 待处理会话概览
+
+搜索框下方的实时区域，回答"哪个工作区的哪个文件夹有待处理的会话"：
+
+- **待处理 = 等待交互（审批 / 方案确认 / 提问，agent 被阻塞等用户）+ 已完成未读**，等待交互排在前面；
+- 按 **工作区 → 文件夹（或未分类）** 分组，组头显示位置与数量，可折叠 / 展开；
+- 点击会话行直接打开该会话；无待处理时整个区域隐藏，不占空间；
+- 数据来自 DSH 0.2.1 的全局会话状态 hook，状态变化实时推送。
 
 ### 保留的原生操作
 
@@ -84,9 +93,10 @@ dsh plugin --profile web add link:<插件绝对路径>
 1. 顶部按钮：`会话`（新建）、`工作区`（添加）、`分组`（新建分组）；
 2. **工作区行**右侧 `⋯` 菜单：移动到分组（列出所有分组 + 未分组）、新建会话、新建文件夹、重命名、删除；
 3. **文件夹行**悬停操作：新建会话（自动归入）、新建子文件夹、重命名、删除；
-4. **会话行**右侧 `⋯` 菜单：移动到文件夹、重命名、分叉、归档；
-5. 工作区名、文件夹名、会话名**完整显示**（自动换行不截断）；
-6. 整行可点击：悬停显示点击手型，按下拖拽时切换为抓取手型。
+4. **会话行**右侧 `⋯` 菜单：移动到文件夹、重命名、分叉、归档、复制会话 ID；
+5. 搜索框下方的**待处理区域**：按工作区 / 文件夹分组展示等待交互与已完成未读的会话，点击直达；
+6. 工作区名、文件夹名、会话名**完整显示**（自动换行不截断）；
+7. 整行可点击：悬停显示点击手型，按下拖拽时切换为抓取手型。
 
 ## 结构
 
@@ -106,13 +116,14 @@ dsh-session-organizer/
 - 采用 `dsh-workspace-hub` 的自包含模式：client 为 `window.__ModuleLoader__.load` 手递 bundle（仅依赖 `react`），host 为 ESM 插件（仅依赖 `node:fs` / `node:path`），无构建工具链、无第三方运行时依赖；
 - 通过 `ctx.slots.inject('sidebar.workspaces', …)` + `priority: -100` 顶替内置工作区浏览器（DSH 侧边栏会话列表没有独立的可注入钩子，只能整体替换浏览区域）；
 - 数据读取：`useWorkspaces` / `useSessions` 选择器 hook；操作：`ctx.get('workspaces')` / `ctx.get('sessions')` 服务；
+- DSH 0.2.1 适配：打开会话走 `uiWorkspace.openSession`（0.1.5 的 `sessions.open` 语义已变）；会话状态（阻塞 / 运行 / 已完成未读）读取 ui-session 经 `slots.provideRoot` 注册的全局 `sessionStatus` hook；
 - 点击与拖拽互不干扰：行内点击改用 mousedown/mouseup 位移判定（≤4px 视为点击），避免 draggable 行吞掉 click；
 - 拖拽使用独立 MIME 命名空间 `application/x-dshorg`，避免与其他插件冲突；
 - 许可证 MIT；参考实现 `dsh-workspace-hub`（Apache-2.0）、`dsh-session-categories`（MIT）。
 
 ## 兼容性与已知限制
 
-- 针对 **DSH 0.1.5-rc.1（web profile）** 的槽位 / 服务 API 开发与测试，DSH 升级后如侧边栏槽位 / 服务 API 变动需同步适配；
+- 针对 **DSH 0.2.1-rc.2（web profile）** 开发与测试（`engines.dsh: >=0.2.1-rc.1`）；DSH 升级后如侧边栏槽位 / 服务 API 变动需同步适配；
 - 与同样替换 `sidebar.workspaces` 槽位的插件（如 `dsh-workspace-hub`、`dsh-session-categories`）**互斥**，请勿同时安装；
 - 消息全文搜索依赖 host 侧检索后端（见上文「消息全文搜索的前提」）。
 
