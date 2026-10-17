@@ -1,7 +1,7 @@
 {
   "name": "dsh-session-organizer",
-  "description": "会话文件夹（伴随模式）：在官方会话列表上叠加「移动到文件夹」菜单、行首徽标与管理弹窗。Session folders as a companion to the native sidebar for DeepSeek Harness.",
-  "version": "0.2.0",
+  "description": "两级会话组织器（替换式侧栏）：工作区分组 + 工作区内会话文件夹，已适配 DSH 0.2.1。Two-level session organizer for DeepSeek Harness: workspace groups and per-workspace session folders.",
+  "version": "0.2.1",
   "license": "MIT",
   "type": "module",
   "main": "lib/index.js",
